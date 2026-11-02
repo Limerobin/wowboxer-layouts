@@ -12,7 +12,6 @@ public enum PlaceResult { Gone, AlreadyThere, Requested }
 /// </summary>
 public static class WindowPlacer
 {
-    private const int BorderStyles = WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
     private const uint NoActivateAsync = SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS;
 
     /// <summary>Asks the window to move into <paramref name="rect"/>. Does nothing if it is already there.</summary>
@@ -36,6 +35,7 @@ public static class WindowPlacer
 
         var r = WithInvisibleFrame(h, rect);
         SetWindowPos(h, 0, r.X, r.Y, r.Width, r.Height, NoActivateAsync | SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOZORDER);
+        if (borderless) ChromeNudge(h, r);
         return PlaceResult.Requested;
     }
 
@@ -80,14 +80,17 @@ public static class WindowPlacer
         return error == 0 ? -1 : error;
     }
 
-    /// <summary>Removes title bar and borders. Returns true if the style changed.</summary>
+    /// <summary>Removes title bar and borders (popup chrome). Returns true if the style changed.</summary>
     public static bool MakeBorderless(nint h)
     {
         if (Sandbox.Active) return false;
         var style = GetWindowLong(h, GWL_STYLE);
-        var borderless = style & ~BorderStyles;
-        if (borderless == style) return false;
-        SetWindowLong(h, GWL_STYLE, borderless);
+        var ex = GetWindowLong(h, GWL_EXSTYLE);
+        var (nextStyle, nextEx) = WindowChrome.ToBorderless(style, ex);
+        if (nextStyle == style && nextEx == ex) return false;
+        SetWindowLong(h, GWL_STYLE, nextStyle);
+        SetWindowLong(h, GWL_EXSTYLE, nextEx);
+        WindowChrome.ApplyCornerPreference(h, borderless: true);
         return true;
     }
 
@@ -96,8 +99,12 @@ public static class WindowPlacer
     {
         if (Sandbox.Active) return false;
         var style = GetWindowLong(h, GWL_STYLE);
-        if ((style & BorderStyles) == BorderStyles) return false;
-        SetWindowLong(h, GWL_STYLE, style | BorderStyles);
+        var ex = GetWindowLong(h, GWL_EXSTYLE);
+        var (nextStyle, nextEx) = WindowChrome.ToFramed(style, ex);
+        if (nextStyle == style && nextEx == ex) return false;
+        SetWindowLong(h, GWL_STYLE, nextStyle);
+        SetWindowLong(h, GWL_EXSTYLE, nextEx);
+        WindowChrome.ApplyCornerPreference(h, borderless: false);
         return true;
     }
 
@@ -107,8 +114,21 @@ public static class WindowPlacer
         if (Sandbox.Active) return Sandbox.SetTopmost(h, false);
         if (!IsWindow(h)) return false;
         var style = GetWindowLong(h, GWL_STYLE);
-        SetWindowLong(h, GWL_STYLE, style | BorderStyles);
+        var ex = GetWindowLong(h, GWL_EXSTYLE);
+        var (nextStyle, nextEx) = WindowChrome.ToFramed(style, ex);
+        SetWindowLong(h, GWL_STYLE, nextStyle);
+        SetWindowLong(h, GWL_EXSTYLE, nextEx);
+        WindowChrome.ApplyCornerPreference(h, borderless: false);
         return SetWindowPos(h, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | NoActivateAsync);
+    }
+
+    /// <summary>One pixel wider, then exact size, so WoW rereads mouse bounds after popup chrome.</summary>
+    private static void ChromeNudge(nint h, PixelRect r)
+    {
+        if (r.Width < 1 || r.Height < 1) return;
+        const uint flags = NoActivateAsync | SWP_NOMOVE | SWP_NOZORDER;
+        SetWindowPos(h, 0, 0, 0, r.Width + 1, r.Height, flags);
+        SetWindowPos(h, 0, 0, 0, r.Width, r.Height, flags | SWP_FRAMECHANGED);
     }
 
     /// <summary>

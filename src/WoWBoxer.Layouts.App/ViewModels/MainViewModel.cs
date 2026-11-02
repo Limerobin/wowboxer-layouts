@@ -408,7 +408,36 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (Current is null || Current.Options.Borderless == value) return;
-            EditOptions(o => o with { Borderless = value });
+            var options = Current.Options with { Borderless = value };
+            // Side/Grid/… column width depends on FrameSize. Rebuild the preset so followers keep full row
+            // height when title bars go away (otherwise Fit + TowardsMiddle leaves desktop gaps).
+            if (Current.Preset is { } kind)
+            {
+                try
+                {
+                    var screens = ChosenScreens.Count > 0 ? ChosenScreens : [Core.Monitors.Primary(Monitors)];
+                    var preset = Presets.ForScreens(kind, Current.Clients, screens, options with { Fit = FitMode.ShrinkAnchor },
+                        Current.Split, Current.FollowersOnSecond);
+                    var slots = preset.Slots
+                        .Select((s, i) => i < Current.Slots.Count ? s with { Name = Current.Slots[i].Name, Class = Current.Slots[i].Class } : s)
+                        .ToList();
+                    Update(Current with
+                    {
+                        Options = options,
+                        Slots = slots,
+                        Screens = preset.Screens,
+                        Split = preset.Split,
+                        FollowersOnSecond = preset.FollowersOnSecond,
+                    });
+                }
+                catch (Exception e) when (e is ArgumentException or InvalidOperationException)
+                {
+                    EditOptions(_ => options);
+                    Status.Warn(e.Message.Split(" (Parameter")[0]);
+                }
+            }
+            else
+                EditOptions(_ => options);
             ApplyBorderlessChrome();
         }
     }

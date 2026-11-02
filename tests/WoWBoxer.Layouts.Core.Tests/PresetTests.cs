@@ -32,6 +32,34 @@ public class PresetTests
         Assert.Equal(new PixelRect(1690, 696, 870, 696), placed[2].Rect);
     }
 
+    [Fact]
+    public void Side_framed_geometry_shrinks_followers_if_resolved_borderless_without_rebuild()
+    {
+        // Column width was computed for title bars; flipping Borderless alone makes Fit + TowardsMiddle
+        // leave desktop gaps at the top and bottom of the follower column.
+        var framed = Presets.Create(PresetKind.Side, 3, TestMonitors.Reference, options: new LayoutOptions { MinAspect = 4.0 / 3 });
+        var mismatched = framed with { Options = framed.Options with { Borderless = true } };
+        var followers = LayoutEngine.Resolve(mismatched, TestMonitors.Reference)
+            .Where(p => p.Slot.Role == SlotRole.Follower)
+            .ToList();
+
+        Assert.Equal(2, followers.Count);
+        Assert.Contains(followers, f => f.Rect.Height < 696);
+        Assert.True(followers[0].Rect.Y > 0 || followers[1].Rect.Bottom < 1392);
+    }
+
+    [Fact]
+    public void Side_rebuild_with_borderless_fills_follower_column_height()
+    {
+        var options = new LayoutOptions { Borderless = true, MinAspect = 4.0 / 3 };
+        var placed = LayoutEngine.Resolve(Presets.Create(PresetKind.Side, 3, TestMonitors.Reference, options: options), TestMonitors.Reference);
+        var followers = placed.Where(p => p.Slot.Role == SlotRole.Follower).OrderBy(p => p.Rect.Y).ToList();
+
+        Assert.Equal(0, followers[0].Rect.Y);
+        Assert.Equal(followers[0].Rect.Bottom, followers[1].Rect.Y);
+        Assert.Equal(1392, followers[1].Rect.Bottom);
+    }
+
     [Theory]
     [MemberData(nameof(AllCombinations))]
     public void Every_slot_is_inside_its_monitor_work_area(PresetKind kind, int n, string setup, int screens)

@@ -451,6 +451,21 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Remove title bars: same layout Borderless flag as Settings › Window rules. Applies at once. Declared after Hover so it docks above it. -->
+                <Border DockPanel.Dock="Bottom" Margin="0,10,0,0" Padding="0,10,0,0"
+                        BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0">
+                    <StackPanel>
+                        <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding Borderless}"
+                                  AutomationProperties.AutomationId="BorderlessToggle"
+                                  AutomationProperties.Name="Remove title bars"
+                                  ToolTip="Removes the Windows title bar and frame so slots sit edge to edge. WoW must stay Windowed. Off by default.">
+                            <TextBlock Text="Remove title bars" FontSize="13" />
+                        </CheckBox>
+                        <TextBlock Margin="0,6,0,0" FontSize="11.5" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"
+                                   Text="Off is safest. On removes the Windows frame; keep Display Mode on Windowed." />
+                    </StackPanel>
+                </Border>
+
                 <!-- one compact row per window; drag ⋮⋮ to reorder; ▾ opens the window's details -->
                 <ListBox x:Name="PartyList" ItemsSource="{Binding Party}" SelectedIndex="{Binding SelectedSlotIndex}" ItemContainerStyle="{StaticResource SquadItem}" PreviewGotKeyboardFocus="OnRowFocus"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" AutomationProperties.Name="Squad rows">

@@ -32,7 +32,7 @@
                         <CheckBox Style="{StaticResource Setting}" IsChecked="{Binding CoverTaskbar}"><TextBlock Text="Cover the taskbar area" /></CheckBox>
                         <TextBlock Style="{StaticResource Explain}" Text="{Binding TaskbarHint}" />
                         <CheckBox Style="{StaticResource Setting}" IsChecked="{Binding Borderless}"><TextBlock Text="Remove title bars" /></CheckBox>
-                        <TextBlock Style="{StaticResource Explain}" Text="Off is safest: in our tests WoW sometimes drew its UI at the wrong size after the frame was removed." />
+                        <TextBlock Style="{StaticResource Explain}" Text="Off by default. On removes the Windows frame with popup chrome so the slot size is the game area; keep WoW on Windowed." />
                     </StackPanel>
                 </ContentControl>
 

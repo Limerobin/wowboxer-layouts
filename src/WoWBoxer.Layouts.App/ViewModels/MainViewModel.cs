@@ -405,7 +405,12 @@ public sealed class MainViewModel : ObservableObject
     public bool Borderless
     {
         get => Current?.Options.Borderless ?? false;
-        set => EditOptions(o => o with { Borderless = value });
+        set
+        {
+            if (Current is null || Current.Options.Borderless == value) return;
+            EditOptions(o => o with { Borderless = value });
+            ApplyBorderlessChrome();
+        }
     }
 
     /// <summary>Use the whole monitor, including the taskbar's area.</summary>
@@ -1737,6 +1742,23 @@ public sealed class MainViewModel : ObservableObject
         var open = Windows.Select(w => w.Window).ToList();
         foreach (var w in open) WindowPlacer.RestoreFrame(w.Handle);
         Status.Info($"Gave {open.Count} WoW window(s) their title bars back.");
+    }
+
+    /// <summary>
+    /// Applies or restores window frames on mapped WoW windows right away (even while paused).
+    /// Later Start / Re-arrange keep using Profile.Options.Borderless.
+    /// </summary>
+    private void ApplyBorderlessChrome()
+    {
+        if (Current is null || Plan() is not { } plan) return;
+        RefreshWindows();
+        var placements = Placements();
+        if (placements.Count == 0) return;
+        foreach (var (window, slot) in placements)
+            plan.Place(window.Handle, slot);
+        Status.Info(Current.Options.Borderless
+            ? $"Removed title bars on {placements.Count} WoW window(s)."
+            : $"Restored title bars on {placements.Count} WoW window(s).");
     }
 
     /// <summary>Writes the Diagnose report (the same as "wbx diagnose") to the logs folder.</summary>

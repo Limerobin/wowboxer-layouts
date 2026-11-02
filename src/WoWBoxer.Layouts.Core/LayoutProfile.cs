@@ -83,7 +83,7 @@ public sealed record LayoutSlot
 
 public sealed record LayoutOptions
 {
-    /// <summary>Remove title bars. Off by default: WoW (Classic Era) draws its UI at the wrong size when the frame is removed.</summary>
+    /// <summary>Remove title bars (popup chrome). Off by default.</summary>
     public bool Borderless { get; init; }
     /// <summary>Width/height below which WoW letterboxes. 1.25 (5:4) is our own measurement.</summary>
     public double MinAspect { get; init; } = Geometry.DefaultMinAspect;

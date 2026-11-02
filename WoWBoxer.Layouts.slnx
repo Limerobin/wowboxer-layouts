@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/WoWBoxer.Layouts.Core.Tests/WoWBoxer.Layouts.Core.Tests.csproj" />
+    <Project Path="tests/WoWBoxer.Layouts.Win32.Tests/WoWBoxer.Layouts.Win32.Tests.csproj" />
   </Folder>
 </Solution>

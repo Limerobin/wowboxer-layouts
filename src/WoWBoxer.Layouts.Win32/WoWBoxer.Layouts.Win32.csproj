@@ -11,4 +11,8 @@
     <ProjectReference Include="..\WoWBoxer.Layouts.Core\WoWBoxer.Layouts.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="WoWBoxer.Layouts.Win32.Tests" />
+  </ItemGroup>
+
 </Project>

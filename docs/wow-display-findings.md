@@ -40,6 +40,9 @@ Measured on the owner's PC, 2026-10-27: Classic Era 2026 (`WowClassic.exe`, clas
 - Default stays **title bars on** (the owner's confirmed setup). `--borderless` is available.
 - The 2 px resize nudge does not fix anything [verified by the owner]. It stays on (harmless) until we can remove it
   after more field data.
+- 2026-11-02: ClientLayout-style popup chrome (`WS_POPUP`, client-sized place, 1 px width nudge) lands in
+  `WindowPlacer` so borderless no longer leaves an overlapped frame. Setup gains a **Remove title bars** toggle
+  (same `Borderless` flag as Settings). Default stays **off**.
 
 ## Where UI scale lives – answered (2026-10-27, Forever client started and closed by us)
 Test on our own Forever client (`_forever_\Wow.exe` 1.60.1, not running for the owner): Config.wtf backed up →

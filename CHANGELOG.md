@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- **Remove title bars on Setup** (Your squad, above Hover): same layout option as Settings › Window rules; applies
+  at once. Borderless chrome now uses a real popup frame and client-sized placement so mouse/UI stay aligned.
+  Default remains off.
+
 ## v0.6.0 – Now simply called WoWBoxer (2026-10-31)
 - **The app is now called "WoWBoxer"** everywhere you see it: title bar, About, welcome screen, What's new, the tray,
   Diagnose and Report a problem, the installer, the Start menu and desktop shortcuts and Windows' Apps list. Where app
